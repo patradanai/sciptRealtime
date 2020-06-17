@@ -2,22 +2,36 @@
 echo '
 ##########################################################################
 ###                                                                    ###
-###         Welcome to Platform Maintanance                            ###             
+###                 Welcome to Platform Maintanance                    ###             
 ###                                                                    ###
-###         Project : Realtime Record (ENET,RS232)                     ###
+###                 Project : Realtime Record (ENET,RS232)             ###
 ###                                                                    ###
-###         Please Following instruction                               ###
+###                 Please Following instruction                       ###
 ###                                                                    ###     
 ##########################################################################
 '
 
-echo '1/20 STEP : Determine Machine Name ? : '
-read -p nameMachine
+dir="$(dirname "$(readlink -f "$0")")"
 
-echo "2/20 STEP : Setting IP Machine"
-read ipMachine
+echo "Current dir : $dir"
 
-echo '3/20 STEP : Choose option protocol : 1. ENET(1E FRAME FX3UENET, QSERIES) 2. ENET(3E FRAME QSERIES, FX5U 3. RS232 FX3U2DB'
+PS3 = "Please Enter your choose : "
+options = ("Option 1" "Option 2" "Exit")
+select opt in "${options[@]}";
+do 
+    case $opt in 
+        "Option 1") ;;
+
+        "Option 2") ;;
+
+        "Exit") 
+            break
+        ;;
+        *) echo "Invalid Choose";;
+    esac
+done
+
+echo 'Choose option protocol : 1. ENET(1E FRAME FX3UENET, QSERIES) 2. ENET(3E FRAME QSERIES, FX5U 3. RS232 FX3U2DB'
 read typeProcol
 
 case $typeProcol in 
@@ -30,15 +44,7 @@ case $typeProcol in
                     *) echo "Access Denied"
 esac
 
-echo '4/20 STEP : Setting IP PLC? : '
-read ipPlc
-
-echo '5/20 STEP : Setting Port PLC? : '
-read portPlc
-
-echo '6/20 STEP : MQTT server ip for AutoIP : default port : 1883'
-read mqttIpServer
-
+echo "Your choose is : $choose" 
 
 set -x 
 
@@ -65,6 +71,17 @@ network={
     psk="nextgen2019"
     key_mgmt=WPA-PSK }
 EOF'
+
+while true;
+do 
+if ping -q -c 1 -W 1 163.50.57.10 > /dev/null; then
+    break
+else
+    echo "Can not Connect Wifi"
+fi
+done
+
+wait
 
 # Setting Proxy
 echo "Setting Proxy"
@@ -156,10 +173,71 @@ sudo systemctl enable ntp
 
 # Moving Files
 
-sudo cp LossCode.desktop /home/pi/Desktop/
-sudo cp MyIcon.png /home/pi
-sudo cp start.sh /home/pi
+# Generate File
+sudo sh -c "cat > /home/pi/Desktop/LossCode.desktop << EOF
+    [Desktop Entry]
+    Encoding=UTF-8
+    Version=1.0
+    Type=Application
+    Terminal=false
+    Exec=lxterminal -e $dir/start.sh
+    StartupNotify=false
+    Name=LossCode
+    Icon=$dir/MyIcon.png
+EOF"
 
-sudo chmod +x /home/pi/start.sh
+wait
+
+sudo sh -c "cat > $dir/start.sh << EOF
+    #!/bin/bash
+    cd /home/pi/Pyside_Andon_GUI/
+    /usr/bin/sudo /usr/bin/python3 MainLoop.py
+EOF"
+
+wait
+
+sudo chmod +x $dir/start.sh
+
+# Lib # Package
+case $choose in
+    1)
+        sudo cp -R $dir/data/lib/0011000101000011/Mc_protocol.so $dir/data/Pyside_Andon_GUI/
+        sudo cp -R $dir/data/package/0011000101000011/PLCThreading.py  $dir/data/Pyside_Andon_GUI/
+    ;;
+    2) 
+        sudo cp -R $dir/data/lib/0011000101000101 /Mc_protocol.so $dir/data/Pyside_Andon_GUI/
+        sudo cp -R $dir/data/package/0011000101000101 /PLCThreading.py  $dir/data/Pyside_Andon_GUI/
+    ;; 
+    3) 
+        sudo cp -R $dir/data/lib/0011001101000101 /Mc_protocol.so $dir/data/Pyside_Andon_GUI/
+        sudo cp -R $dir/data/package/0011001101000101 /PLCThreading.py  $dir/data/Pyside_Andon_GUI/
+    ;;
+    *)
+esac
+
+# Install AutoIP
+
+sudo systemctl enable $dir/ipAddr/ipAddr.service
+wait 
+sudo systemctl start ipAddr
+
+# Setting AutoIP
+
+sudo nano $dir/ipAddr/Setting.ini
+
+wait
+
+# Setting Text
+
+sudo nano $dir/data/Pyside_Andon_GUI/Setting/Parameter.ini
+
+wait
+
+sudo nano $dir/data/Pyside_Andon_GUI/Setting/LossCode.ini
+
+wait
+
+
+# Echo Result
 
 set +x

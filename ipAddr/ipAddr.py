@@ -2,11 +2,27 @@ import socket
 import paho.mqtt.client as mqtt
 import time
 import os
+import configparser
 
+# directory of folder
+
+dir = os.path.dirname(os.path.realpath(__file__))
+
+# Variable
+
+hostMqtt = ""
+portMqtt = 0
+topicMqtt = ""
 
 if __name__ == "__main__":
-    host = "MTL-700-NOA55"
-    port = 1883
+    myConfig = configparser.ConfigParser()
+    myConfig.read(dir+"/Setting.ini")
+    hostMqtt = myConfig.get('AutoIP','serverIP')
+    portMqtt = myConfig.get('AutoIP','serverPort')
+    topicMqtt = myConfig.get('AutoIP','nameTopic')
+    
+    host = str(hostMqtt)
+    port = int(portMqtt)
     client = mqtt.Client()
     client.connect(host)
 
@@ -16,7 +32,7 @@ if __name__ == "__main__":
 
     while True:
         client.loop_start()
-        client.publish("ipAddr/Rasp/NMPSC/NMPSC-409", str(myip))
+        client.publish(str(topicMqtt), str(myip))
         time.sleep(60)
         client.loop_stop()
 

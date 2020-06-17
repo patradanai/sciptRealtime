@@ -19,11 +19,11 @@ configSetting () {
 
     # Setting Text
 
-    sudo nano $dir/data/Pyside_Andon_GUI/Setting/Parameter.ini
+    sudo nano $dir/data/bin/Setting/Parameter.ini
 
     wait
 
-    sudo nano $dir/data/Pyside_Andon_GUI/Setting/LossCode.ini
+    sudo nano $dir/data/bin/Setting/LossCode.ini
 
     wait
 }
@@ -46,6 +46,8 @@ echo "
 ##           #                          ##
 ##########################################
 "
+
+wait
 
 PS3='Please Enter your choose : '
 options=("Default Installation" "Modify Configuration" "Exit")
@@ -228,7 +230,7 @@ then
 
     sudo sh -c "cat > $dir/start.sh << EOF
         #!/bin/bash
-        cd /home/pi/Pyside_Andon_GUI/
+        cd $dir/bin/
         /usr/bin/sudo /usr/bin/python3 MainLoop.py
     EOF"
 
@@ -236,19 +238,25 @@ then
 
     sudo chmod +x $dir/start.sh
 
+    # Backup File
+
+    sudo cp -R $dir/data/bin/ $dir/data/tmp/bin.backup
+
+    wait
+
     # Lib # Package
     case $choose in
         1)
-            sudo cp -R $dir/data/lib/0011000101000011/Mc_protocol.so $dir/data/Pyside_Andon_GUI/
-            sudo cp -R $dir/data/package/0011000101000011/PLCThreading.py  $dir/data/Pyside_Andon_GUI/
+            sudo cp -R $dir/data/lib/0011000101000011/Mc_protocol.so $dir/data/bin/
+            sudo cp -R $dir/data/package/0011000101000011/PLCThreading.py  $dir/bin/
         ;;
         2) 
-            sudo cp -R $dir/data/lib/0011000101000101 /Mc_protocol.so $dir/data/Pyside_Andon_GUI/
-            sudo cp -R $dir/data/package/0011000101000101 /PLCThreading.py  $dir/data/Pyside_Andon_GUI/
+            sudo cp -R $dir/data/lib/0011000101000101 /Mc_protocol.so $dir/data/bin/
+            sudo cp -R $dir/data/package/0011000101000101 /PLCThreading.py  $dir/bin/
         ;; 
         3) 
-            sudo cp -R $dir/data/lib/0011001101000101 /Mc_protocol.so $dir/data/Pyside_Andon_GUI/
-            sudo cp -R $dir/data/package/0011001101000101 /PLCThreading.py  $dir/data/Pyside_Andon_GUI/
+            sudo cp -R $dir/data/lib/0011001101000101 /Mc_protocol.so $dir/data/bin/
+            sudo cp -R $dir/data/package/0011001101000101 /PLCThreading.py  $dir/data/bin/
         ;;
         *)
     esac
